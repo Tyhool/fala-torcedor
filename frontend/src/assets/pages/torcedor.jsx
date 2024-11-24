@@ -9,18 +9,15 @@ const api = axios.create({
 
 function App() {
 
-
-  const [users, setUsers] = useState([])
-  const [teams, setTeams] = useState([]); // Estado para armazenar os times
+  const [users, setUsers] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [id, setId] = useState('')
   const [nome, setNome] = useState('')
   const [time, setTime] = useState('')
   const [nascimento, setNascimento] = useState('')
 
-
-
-
   //------------------torcedor----------------
+
   useEffect(() => {
     api.get('/torcedores').then((res) => {
       console.log(res.data)
@@ -29,47 +26,24 @@ function App() {
 
     // Buscar times
     api.get('/times').then((res) => {
-        console.log(res.data);
-        setTeams(res.data);
-      });
+      console.log(res.data)
+      setTeams(res.data);
+    });
   }, [])
 
-  function novoTorcedor(e) {
-    e.preventDefault();    
-    // Verifica se o time selecionado é válido
-    const isTimeValid = teams.some(team => team.nome === time);
-  
-    if (!isTimeValid) {
-        alert("Por favor, selecione um time válido. Novo torcedor");
-        return;
-    }
-
+  function novoTorcedor() {
     api.post('/torcedores', { nome, time, nascimento }).then((res) => {
-      console.log(res.data);
+      console.log(res.data)
       setUsers([...users, res.data]);
-      // Limpa os campos após salvar
-      setNome('');
-      setTime('');
-      setNascimento('');
-    }).catch(error => {
-        console.error("Erro ao salvar torcedor:", error);
     });
   }
 
-
   function alterarTorcedor(id) {
-      // Verifica se o time selecionado é válido
-    const isTimeValid = teams.some(team => team.nome === time);
-    
-    if (!isTimeValid) {
-        alert("Por favor, selecione um time válido. Alterar torcedor");
-        return;
-    }
     api.patch(`/torcedores/${id}`, { id, nome, time, nascimento }).then((res) => {
       console.log(res.data)
       setUsers(users.map((user) => user.id === id ? res.data : user))
     }).catch(error => {
-        console.error("Erro ao atualizar torcedor:", error);
+      console.error("Erro ao atualizar torcedor:", error);
     });
   }
 
@@ -79,7 +53,6 @@ function App() {
     })
   }
 
- 
   return (
     <div>
       <div>
@@ -89,23 +62,23 @@ function App() {
             <li key={user.id}>
               Nome:{user.nome} - Time:{user.time} - Nascimento:{user.nascimento}
             </li>
-          ))}
+          ))} 
         </ul>
 
         <h2>Novo Torcedor</h2>
         <form>
           <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
 
-        <select value={time} onChange={(e) => setTime(e.target.value)}>
+          <select value={time} onChange={(e) => setTime(e.target.value)}>
             <option value="">Selecione um time</option>
             {teams.map((team) => (
               <option key={team.id} value={team.nome}>
                 {team.nome}
               </option>
             ))}
-        </select>
+          </select>
           <input type="text" placeholder="Nascimento" value={nascimento} onChange={(e) => setNascimento(e.target.value)} />
-          <button onClick={() => novoTorcedor}>Salvar</button>
+          <button onClick={novoTorcedor}>Salvar</button>
 
 
           <h2>Alterar Torcedor</h2>
@@ -122,7 +95,7 @@ function App() {
           </select>
 
           <input type="text" placeholder="Nascimento" value={nascimento} onChange={(e) => setNascimento(e.target.value)} />
-          <button onClick={() => alterarTorcedor(id)}>Alterar</button>
+          <button onClick={alterarTorcedor(id)}>Alterar</button>
 
 
           <h2>Excluir Torcedor</h2>
@@ -138,10 +111,8 @@ function App() {
           </ul>
         </form>
       </div>
-      
+
     </div>
-
-
   )
 }
 

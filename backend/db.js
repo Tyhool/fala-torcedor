@@ -1,25 +1,37 @@
-async function connect(){
-	
-	if(global.connection)
-		return global.connection.connect();
+const { Pool } = require("pg");
 
+let pool;
+async function connect() {
+  try {
+    // Verifica se já existe um pool ativo
+    if (!pool) {
+      pool = new Pool({
+        connectionString: process.env.CONNECTION_STRING,
+      });
 
-	const {Pool} = require("pg");
-	const pool = new Pool({
-		connectionString: process.env.CONNECTION_STRING,
-	});
-	const client = await pool.connect();
-	console.log("criou o pool de conexao");
-	
-	const res = await client.query("select now()");
-	console.log(res.rows[0]);
-	client.release();
-	
-	global.connection = pool;
-	return pool.connect();
+      console.log("Criou o pool de conexão.");
+    }
+
+    // Testa a conexão e retorna o cliente
+    const client = await pool.connect();
+    console.log("Conexão estabelecida com sucesso!");
+
+    // Exemplo de teste de consulta (pode ser removido em produção)
+    const res = await client.query("SELECT NOW()");
+    console.log("Hora atual no servidor:", res.rows[0]);
+
+    // Libera o cliente para o pool
+    client.release();
+
+    return pool;
+  } catch (err) {
+    console.error("Erro ao conectar ao banco de dados:", err);
+    throw err; // Lança o erro para que ele seja tratado pelo chamador
+  }
 }
 
-connect();
+// Exporta a função para uso em outras partes da aplicação
+module.exports = { connect };
 
 async function selectTimes(){
 	const client = await connect();
@@ -68,7 +80,7 @@ async function selectTorcedores(){
 
 async function selectTorcedor(id){
 	const client = await connect();
-	const res = await client.query ("select *from time where ID=$1",[id] );
+	const res = await client.query ("select * from time where ID=$1",[id] );
 	return res.rows;
 	
 }

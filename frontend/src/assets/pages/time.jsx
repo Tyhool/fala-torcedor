@@ -74,7 +74,7 @@ function App() {
           <input type="text" placeholder="Serie" value={serie} onChange={(e) => setSerie(e.target.value)} />
           <input type="text" placeholder="Fundacao" value={fundacao} onChange={(e) => setFundacao(e.target.value)} />
 
-          <button onClick={() => alterarTime(id)}>Alterar</button>
+          <button onClick={alterarTime(id)}>Alterar</button>
 
 
           <h2>Excluir Time</h2>
