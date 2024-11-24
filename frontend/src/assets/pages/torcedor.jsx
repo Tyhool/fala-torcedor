@@ -35,14 +35,14 @@ function App() {
   }, [])
 
   function novoTorcedor(e) {
-    e.preventDefault(); // Previne o comportamento padrão do formulário
+    e.preventDefault();    
     // Verifica se o time selecionado é válido
-    // const isTimeValid = teams.some(team => team.nome === time);
+    const isTimeValid = teams.some(team => team.nome === time);
   
-    // if (!isTimeValid) {
-    //     alert("Por favor, selecione um time válido. Novo torcedor");
-    //     return;
-    // }
+    if (!isTimeValid) {
+        alert("Por favor, selecione um time válido. Novo torcedor");
+        return;
+    }
 
     api.post('/torcedores', { nome, time, nascimento }).then((res) => {
       console.log(res.data);
@@ -59,12 +59,12 @@ function App() {
 
   function alterarTorcedor(id) {
       // Verifica se o time selecionado é válido
-    // const isTimeValid = teams.some(team => team.nome === time);
+    const isTimeValid = teams.some(team => team.nome === time);
     
-    // if (!isTimeValid) {
-    //     alert("Por favor, selecione um time válido. Alterar torcedor");
-    //     return;
-    // }
+    if (!isTimeValid) {
+        alert("Por favor, selecione um time válido. Alterar torcedor");
+        return;
+    }
     api.patch(`/torcedores/${id}`, { id, nome, time, nascimento }).then((res) => {
       console.log(res.data)
       setUsers(users.map((user) => user.id === id ? res.data : user))
@@ -105,7 +105,7 @@ function App() {
             ))}
         </select>
           <input type="text" placeholder="Nascimento" value={nascimento} onChange={(e) => setNascimento(e.target.value)} />
-          <button onClick={() => novoTorcedor}>Alterar</button>
+          <button onClick={() => novoTorcedor}>Salvar</button>
 
 
           <h2>Alterar Torcedor</h2>

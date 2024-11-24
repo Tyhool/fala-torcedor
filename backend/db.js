@@ -23,14 +23,14 @@ connect();
 
 async function selectTimes(){
 	const client = await connect();
-	const res = await client.query ("select *from time" );
+	const res = await client.query ("select * from time" );
 	return res.rows;
 	
 }
 
 async function selectTime(id){
 	const client = await connect();
-	const res = await client.query ("select *from time where ID=$1",[id] );
+	const res = await client.query ("select * from time where ID=$1",[id] );
 	return res.rows;
 	
 }
@@ -61,7 +61,7 @@ async function deleteTime(id){
 
 async function selectTorcedores(){
 	const client = await connect();
-	const res = await client.query ("select *from torcedor" );
+	const res = await client.query ("select * from torcedor" );
 	return res.rows;
 	
 }
