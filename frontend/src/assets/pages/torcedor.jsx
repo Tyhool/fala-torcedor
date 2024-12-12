@@ -38,12 +38,20 @@ function App() {
     });
   }
 
+
+
   function alterarTorcedor(id) {
-    api.patch(`/torcedores/${id}`, { id, nome, time, nascimento }).then((res) => {
-      console.log(res.data)
-      setUsers(users.map((user) => user.id === id ? res.data : user))
-    }).catch(error => {
-      console.error("Erro ao atualizar torcedor:", error);
+    const updatedTorcedor = {};
+    
+    if (nome) updatedTorcedor.nome = nome;
+    if (time) updatedTorcedor.time = time;
+    if (nascimento) updatedTorcedor.nascimento = nascimento;
+  
+    api.patch(`/torcedores/${id}`, updatedTorcedor).then((res) => {
+      console.log(res.data);
+      setUsers(users.map((user) => user.id === id ? { ...user, ...updatedTorcedor } : user));
+    }).catch((error) => {
+      console.error("Erro ao atualizar time:", error);
     });
   }
 

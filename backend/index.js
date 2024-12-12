@@ -85,6 +85,29 @@ app.delete("/torcedores/:id", async (req,res) => {
 	res.sendStatus(204);
 })	
 
+//-------------------relatorio-------------------
+
+app.get("/relatorios", async (req, res) => {
+    const { time } = req.query;
+
+    if (!time) {
+        return res.status(400).send({ error: "O campo 'time' é obrigatório." });
+    }
+
+    try {
+		const report = await db.countTorcedoresPorTime(time);
+		const torcedores = await db.getTorcedoresPorTime(time);
+	
+		res.send({
+		  total_torcedores: report.total_torcedores,
+		  torcedores: torcedores.map(torcedor => torcedor.nome),
+		});
+	  } catch (err) {
+		console.error(err);
+		res.status(500).send({ error: 'Erro ao gerar o relatório.' });
+	  }
+});
+
 
 app.listen(port);
 console.log(port);

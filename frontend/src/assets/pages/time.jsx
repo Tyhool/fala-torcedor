@@ -32,12 +32,19 @@ function App() {
     })
   }
 
-
   function alterarTime(id) {
-    api.patch(`/times/${id}`, { id, nome, serie, fundacao }).then((res) => {
-      console.log(res.data)
-      setUsers(users.map((user) => user.id === id ? res.data : user))
-    })
+    const updatedTime = {};
+    
+    if (nome) updatedTime.nome = nome;
+    if (serie) updatedTime.serie = serie;
+    if (fundacao) updatedTime.fundacao = fundacao;
+  
+    api.patch(`/times/${id}`, updatedTime).then((res) => {
+      console.log(res.data);
+      setUsers(users.map((user) => user.id === id ? { ...user, ...updatedTime } : user));
+    }).catch((error) => {
+      console.error("Erro ao atualizar time:", error);
+    });
   }
 
   function excluirTime(id) {
@@ -75,6 +82,7 @@ function App() {
           <input type="text" placeholder="Fundacao" value={fundacao} onChange={(e) => setFundacao(e.target.value)} />
 
           <button onClick={alterarTime(id)}>Alterar</button>
+          
 
 
           <h2>Excluir Time</h2>

@@ -54,12 +54,36 @@ async function insertTime(time){
 	const res = await client.query (sql,values);	
 }
 
-async function updateTime(id,time){
+  async function updateTime(id, time) {
 	const client = await connect();
-	const sql = "update time set nome=$1, serie=$2 ,fundacao=$3 where id=$4";
-	const values = [time.nome,time.serie,time.fundacao, id];
-	await client.query (sql,values);	
-}
+	
+	const fields = [];
+	const values = [];
+	let index = 1;
+  
+	if (time.nome) {
+	  fields.push(`nome=$${index++}`);
+	  values.push(time.nome);
+	}
+	if (time.serie) {
+	  fields.push(`serie=$${index++}`);
+	  values.push(time.serie);
+	}
+	if (time.fundacao) {
+	  fields.push(`fundacao=$${index++}`);
+	  values.push(time.fundacao);
+	}
+  
+	if (fields.length === 0) {
+	  throw new Error("Nenhum campo para atualizar.");
+	}
+  
+	values.push(id); // Adiciona o ID no final da lista de valores
+	const sql = `UPDATE time SET ${fields.join(", ")} WHERE id=$${index}`;
+	
+	await client.query(sql, values);
+  }
+
 
 async function deleteTime(id){
 	const client = await connect();
@@ -92,12 +116,36 @@ async function insertTorcedor(torcedor){
 	const res = await client.query (sql,values);	
 }
 
-async function updateTorcedor(id,torcedor){
+
+async function updateTorcedor(id,torcedor) {
 	const client = await connect();
-	const sql = "update torcedor set nome=$1, time=$2 ,nascimento=$3 where id=$4";
-	const values = [torcedor.nome,torcedor.time,torcedor.nascimento, id];
-	await client.query (sql,values);	
-}
+	
+	const fields = [];
+	const values = [];
+	let index = 1;
+  
+	if (torcedor.nome) {
+	  fields.push(`nome=$${index++}`);
+	  values.push(torcedor.nome);
+	}
+	if (torcedor.time) {
+	  fields.push(`time=$${index++}`);
+	  values.push(torcedor.time);
+	}
+	if (torcedor.nascimento) {
+	  fields.push(`nascimento=$${index++}`);
+	  values.push(torcedor.nascimento);
+	}
+  
+	if (fields.length === 0) {
+	  throw new Error("Nenhum campo para atualizar.");
+	}
+  
+	values.push(id); // Adiciona o ID no final da lista de valores
+	const sql = `UPDATE torcedor SET ${fields.join(", ")} WHERE id=$${index}`;
+	
+	await client.query(sql, values);
+  }
 
 async function deleteTorcedor(id){
 	const client = await connect();
@@ -105,6 +153,36 @@ async function deleteTorcedor(id){
 	const values = [id];
 	await client.query (sql,values);	
 }
+
+//----------relatorio------------
+
+
+async function countTorcedoresPorTime(time) {
+    const client = await connect();
+    try {
+        const sql = "SELECT COUNT(*) AS total_torcedores FROM torcedor WHERE time = $1";
+        const values = [time];
+        const res = await client.query(sql, values);
+        return res.rows[0].total_torcedores;
+    } catch (error) {
+        console.error('Erro ao executar a consulta:', error);
+        throw error;
+    }
+}
+
+async function getTorcedoresPorTime(time) {
+	const client = await pool.connect();
+	try {
+	  const res = await client.query(
+		'SELECT nome FROM torcedor WHERE time = $1',
+		[time]
+	  );
+	  return res.rows;
+	} finally {
+	  client.release();
+	}
+  }
+
 
 module.exports = {
 	selectTimes,
@@ -117,6 +195,8 @@ module.exports = {
 	insertTorcedor,
 	updateTorcedor,
 	deleteTorcedor,
+	countTorcedoresPorTime,
+	getTorcedoresPorTime,
 }
 
 
