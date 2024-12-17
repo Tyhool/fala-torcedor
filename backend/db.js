@@ -163,12 +163,13 @@ async function countTorcedoresPorTime(time) {
         const sql = "SELECT COUNT(*) AS total_torcedores FROM torcedor WHERE time = $1";
         const values = [time];
         const res = await client.query(sql, values);
-        return res.rows[0].total_torcedores;
+        return res.rows[0]
     } catch (error) {
         console.error('Erro ao executar a consulta:', error);
         throw error;
     }
 }
+
 
 async function getTorcedoresPorTime(time) {
 	const client = await pool.connect();
@@ -183,6 +184,35 @@ async function getTorcedoresPorTime(time) {
 	}
   }
 
+  async function countTimePorSerie(serie) {
+    const client = await pool.connect();
+    try {
+        const sql = "SELECT COUNT(*) AS total_times FROM time WHERE serie = $1";
+        const values = [serie];
+        const res = await client.query(sql, values);
+        return res.rows[0];
+    } catch (error) {
+        console.error('Erro ao contar times por série:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+async function getTimePorSerie(serie) {
+    const client = await pool.connect();
+    try {
+        const sql = "SELECT nome FROM time WHERE serie = $1";
+        const values = [serie];
+        const res = await client.query(sql, values);
+        return res.rows;
+    } catch (error) {
+        console.error('Erro ao buscar times por série:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
 
 module.exports = {
 	selectTimes,
@@ -197,6 +227,8 @@ module.exports = {
 	deleteTorcedor,
 	countTorcedoresPorTime,
 	getTorcedoresPorTime,
+	countTimePorSerie,
+	getTimePorSerie,
 }
 
 

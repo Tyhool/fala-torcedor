@@ -88,24 +88,39 @@ app.delete("/torcedores/:id", async (req,res) => {
 //-------------------relatorio-------------------
 
 app.get("/relatorios", async (req, res) => {
-    const { time } = req.query;
+    const { time, serie } = req.query;
 
-    if (!time) {
-        return res.status(400).send({ error: "O campo 'time' é obrigatório." });
+    if (!time && !serie) {
+        return res.status(400).send({ error: "Os campos 'time' ou 'serie' são obrigatórios." });
     }
 
     try {
-		const report = await db.countTorcedoresPorTime(time);
-		const torcedores = await db.getTorcedoresPorTime(time);
-	
-		res.send({
-		  total_torcedores: report.total_torcedores,
-		  torcedores: torcedores.map(torcedor => torcedor.nome),
-		});
-	  } catch (err) {
-		console.error(err);
-		res.status(500).send({ error: 'Erro ao gerar o relatório.' });
-	  }
+        let report = {};
+        
+        if (time) {
+            const torcedoresReport = await db.countTorcedoresPorTime(time);
+            const torcedores = await db.getTorcedoresPorTime(time);
+            report = {
+                total_torcedores: torcedoresReport.total_torcedores,
+                torcedores: torcedores.map(torcedor => torcedor.nome),
+            };
+        }
+
+        if (serie) {
+            const timesReport = await db.countTimePorSerie(serie);
+            const times = await db.getTimePorSerie(serie);
+            report = {
+                ...report,
+                total_times: timesReport.total_times,
+                times: times.map(time => time.nome),
+            };
+        }
+
+        res.send(report);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: 'Erro ao gerar o relatório.' });
+    }
 });
 
 
