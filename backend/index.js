@@ -124,6 +124,37 @@ app.get("/relatorios", async (req, res) => {
 });
 
 
+//-------------------tabela-------------------
+
+app.get("/tabelas", async (req, res) => {
+    const { serie } = req.query;
+
+    if (!serie) {
+        return res.status(400).send({ error: "O campo 'serie' é obrigatório." });
+    }
+
+    try {
+        const tabela = await db.getTabela(serie);
+        if (tabela.length === 0) {
+            return res.status(404).send({ error: "Nenhuma tabela encontrada para a série informada." });
+        }
+
+        res.send({
+            serie,
+            tabela: tabela.map(time => ({
+                nome: time.nome,
+                vitoria: time.vitoria,
+                derrota: time.derrota,
+                empate: time.empate,
+            })),
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: 'Erro ao buscar a tabela.' });
+    }
+});
+
+
 app.listen(port);
 console.log(port);
 console.log("backend rodando");

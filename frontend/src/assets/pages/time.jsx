@@ -26,7 +26,9 @@ function App() {
   }, [])
 
   function novoTime() {
-    api.post('/times', { nome, serie, fundacao }).then((res) => {
+    api.post('/times', { 
+      
+     }).then((res) => {
       console.log(res.data)
       setUsers([...users, res.data])
     })

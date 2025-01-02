@@ -33,6 +33,7 @@ function App() {
 
       const res = await api.get('/relatorios', { params });
       setReport(res.data);
+      alert(res.data );
     } catch (err) {
       console.error(err);
       alert('Erro ao gerar o relatório.');

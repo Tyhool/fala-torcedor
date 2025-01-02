@@ -214,6 +214,36 @@ async function getTimePorSerie(serie) {
     }
 }
 
+
+//----------tabela----------------------
+
+async function getTabela(serie) {
+    const client = await pool.connect();
+    try {
+        const sql = "SELECT nome, vitoria, derrota, empate FROM time WHERE serie = $1";
+        const values = [serie];
+        const res = await client.query(sql, values);
+        return res.rows;
+    } catch (error) {
+        console.error('Erro ao buscar tabela por série:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = {
 	selectTimes,
 	selectTime,
@@ -229,6 +259,7 @@ module.exports = {
 	getTorcedoresPorTime,
 	countTimePorSerie,
 	getTimePorSerie,
+	getTabela,
 }
 
 
