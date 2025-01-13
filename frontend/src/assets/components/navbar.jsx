@@ -20,6 +20,9 @@ const Navbar = () => {
                 <li>
                     <Link to="/tabela">Tabela</Link>
                 </li>
+                <li>
+                    <Link to="/resultado">Resultado</Link>
+                </li>
             </ul>
         </nav>
     );

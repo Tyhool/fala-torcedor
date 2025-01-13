@@ -6,6 +6,7 @@ import Time from "./assets/pages/time";
 import Relatorio from "./assets/pages/relatorio";
 import Tabela from "./assets/pages/tabela";
 import Navbar from "./assets/components/navbar";
+import Resultado from "./assets/pages/resultado";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/time" element={<Time />} />
           <Route path="/relatorio" element={<Relatorio />} />
           <Route path="/tabela" element={<Tabela />} />
+          <Route path="/resultado" element={<Resultado />} />
         </Routes>
       </div>
     </Router>

@@ -154,6 +154,42 @@ app.get("/tabelas", async (req, res) => {
     }
 });
 
+app.post('/resultados', async (req, res) => {
+    console.log('Dados recebidos:', req.body);
+    const { serie, time1, time2, resultado } = req.body;
+
+    if (!serie || !time1 || !time2 || !resultado) {
+        return res.status(400).send({ error: 'Todos os campos são obrigatórios.' });
+    }
+
+    if (time1 === time2) {
+        return res.status(400).send({ error: 'Os times devem ser diferentes.' });
+    }
+
+    if (!['time1', 'time2', 'empate'].includes(resultado)) {
+        return res.status(400).send({ error: 'O resultado deve ser "time1", "time2" ou "empate".' });
+    }
+
+    try {
+        await db.registrarResultado(serie, time1, time2, resultado);
+        res.send({ message: 'Resultado registrado com sucesso.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: 'Erro ao registrar o resultado.' });
+    }
+});
+
+app.post('/reset-tabela', async (req, res) => {
+    try {
+        await db.resetTabela();
+        res.send({ message: 'Tabela resetada com sucesso.' });
+    } catch (err) {
+        console.error('Erro ao resetar a tabela:', err);
+        res.status(500).send({ error: 'Erro ao resetar a tabela.' });
+    }
+});
+
+
 
 app.listen(port);
 console.log(port);

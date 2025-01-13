@@ -232,6 +232,62 @@ async function getTabela(serie) {
     }
 }
 
+async function registrarResultado(serie, time1, time2, resultado) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Atualizar resultados dos times
+        const sqlUpdate = `
+            UPDATE time
+            SET 
+                vitoria = vitoria + $1,
+                derrota = derrota + $2,
+                empate = empate + $3
+            WHERE nome = $4 AND serie = $5
+        `;
+        const { vitoria1, derrota1, empate1, vitoria2, derrota2, empate2 } = {
+            vitoria1: resultado === 'time1' ? 1 : 0,
+            derrota1: resultado === 'time2' ? 1 : 0,
+            empate1: resultado === 'empate' ? 1 : 0,
+            vitoria2: resultado === 'time2' ? 1 : 0,
+            derrota2: resultado === 'time1' ? 1 : 0,
+            empate2: resultado === 'empate' ? 1 : 0,
+        };
+
+        // Atualizar time1
+        await client.query(sqlUpdate, [vitoria1, derrota1, empate1, time1, serie]);
+
+        // Atualizar time2
+        await client.query(sqlUpdate, [vitoria2, derrota2, empate2, time2, serie]);
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Erro ao registrar resultado:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+async function resetTabela() {
+  const client = await pool.connect();
+  try {
+      const sql = `
+          UPDATE time
+          SET vitoria = 0, derrota = 0, empate = 0
+      `;
+      await client.query(sql);
+  } catch (error) {
+      console.error('Erro ao resetar a tabela:', error);
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
+
 
 
 
@@ -260,6 +316,8 @@ module.exports = {
 	countTimePorSerie,
 	getTimePorSerie,
 	getTabela,
+	registrarResultado,
+  resetTabela,
 }
 
 
