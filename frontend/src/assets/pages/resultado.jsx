@@ -7,44 +7,57 @@ const api = axios.create({
 });
 
 function Resultado() {
-  const [series, setSeries] = useState([]);
-  const [selectedSerie, setSelectedSerie] = useState('');
-  const [times, setTimes] = useState([]);
-  const [time1, setTime1] = useState('');
-  const [time2, setTime2] = useState('');
+  const [campeonatos, setCampeonatos] = useState([]);
+  const [selectedCampeonato, setSelectedCampeonato] = useState(null);
+  const [clubes, setClubes] = useState([]);
+  const [clube1, setClube1] = useState(null);
+  const [clube2, setClube2] = useState(null);
   const [resultado, setResultado] = useState('');
 
   useEffect(() => {
-    // Buscar séries disponíveis
-    api.get('/times').then((res) => {
-      const seriesList = Array.from(new Set(res.data.map((team) => team.serie)));
-      setSeries(seriesList);
+    api.get('/campeonatos').then((res) => {
+      setCampeonatos(res.data);
     });
   }, []);
 
   useEffect(() => {
-    if (selectedSerie) {
-      // Buscar times da série selecionada
-      api.get('/tabelas', { params: { serie: selectedSerie } }).then((res) => {
-        setTimes(res.data.tabela);
+    if (selectedCampeonato) {
+      api.get('/clubes', { params: { campeonato_id: selectedCampeonato } }).then((res) => {
+        setClubes(res.data);
       });
+    } else {
+      setClubes([]);
+      setClube1(null);
+      setClube2(null);
     }
-  }, [selectedSerie]);
+  }, [selectedCampeonato]);
 
   const registrarResultado = async (e) => {
     e.preventDefault();
 
-    if (!time1 || !time2 || !resultado || time1 === time2) {
+    if (!clube1 || !clube2 || !resultado || clube1 === clube2) {
       alert('Preencha todos os campos corretamente.');
       return;
     }
 
     try {
-      const res = await api.post('/resultados', {
-        serie: selectedSerie,
-        time1,
-        time2,
-        resultado,
+      const ligaResponse = await api.get('/ligas', {
+        params: { campeonato_id: selectedCampeonato, clube_id: [clube1, clube2] },
+      });
+
+      if (ligaResponse.data.length === 0) {
+        alert("Liga não encontrada para os clubes e campeonato selecionados.");
+        return;
+      }
+
+      const liga_id = ligaResponse.data[0].id;
+
+      const res = await api.post('/placares', {
+        liga_id,
+        vitoria: resultado === 'clube1' ? 1 : resultado === 'clube2' ? 0 : 0,
+        derrota: resultado === 'clube1' ? 0 : resultado === 'clube2' ? 1 : 0,
+        empate: resultado === 'empate' ? 1 : 0,
+        jogos: 1,
       });
       alert(res.data.message);
     } catch (err) {
@@ -53,64 +66,52 @@ function Resultado() {
     }
   };
 
-  const resetTabela = async () => {
-    if (window.confirm('Você tem certeza que deseja resetar a tabela?')) {
-        try {
-            const res = await api.post('/reset-tabela');
-            alert(res.data.message);
-        } catch (err) {
-            console.error(err);
-            alert('Erro ao resetar a tabela.');
-        }
-    }
-  };
-
   return (
     <div>
       <h1>Registrar Resultado</h1>
       <form onSubmit={registrarResultado}>
-        <label htmlFor="serie-select">Selecione uma série:</label>
+        <label htmlFor="campeonato-select">Selecione um campeonato:</label>
         <select
-          id="serie-select"
-          value={selectedSerie}
-          onChange={(e) => setSelectedSerie(e.target.value)}
+          id="campeonato-select"
+          value={selectedCampeonato || ''}
+          onChange={(e) => setSelectedCampeonato(e.target.value ? parseInt(e.target.value) : null)}
         >
           <option value="">--Selecione--</option>
-          {series.map((serie, index) => (
-            <option key={index} value={serie}>
-              {serie}
+          {campeonatos.map((campeonato) => (
+            <option key={campeonato.id} value={campeonato.id}>
+              {campeonato.nome} ({campeonato.serie})
             </option>
           ))}
         </select>
         <br />
 
-        <label htmlFor="time1-select">Time 1:</label>
+        <label htmlFor="clube1-select">Clube 1:</label>
         <select
-          id="time1-select"
-          value={time1}
-          onChange={(e) => setTime1(e.target.value)}
-          disabled={!selectedSerie}
+          id="clube1-select"
+          value={clube1 || ''}
+          onChange={(e) => setClube1(e.target.value ? parseInt(e.target.value) : null)}
+          disabled={!selectedCampeonato}
         >
           <option value="">--Selecione--</option>
-          {times.map((time, index) => (
-            <option key={index} value={time.nome}>
-              {time.nome}
+          {clubes.map((clube) => (
+            <option key={clube.id} value={clube.id}>
+              {clube.nome}
             </option>
           ))}
         </select>
         <br />
 
-        <label htmlFor="time2-select">Time 2:</label>
+        <label htmlFor="clube2-select">Clube 2:</label>
         <select
-          id="time2-select"
-          value={time2}
-          onChange={(e) => setTime2(e.target.value)}
-          disabled={!selectedSerie}
+          id="clube2-select"
+          value={clube2 || ''}
+          onChange={(e) => setClube2(e.target.value ? parseInt(e.target.value) : null)}
+          disabled={!selectedCampeonato}
         >
           <option value="">--Selecione--</option>
-          {times.map((time, index) => (
-            <option key={index} value={time.nome}>
-              {time.nome}
+          {clubes.map((clube) => (
+            <option key={clube.id} value={clube.id}>
+              {clube.nome}
             </option>
           ))}
         </select>
@@ -122,17 +123,13 @@ function Resultado() {
           onChange={(e) => setResultado(e.target.value)}
         >
           <option value="">--Selecione--</option>
-          <option value="time1">Vitória do Time 1</option>
-          <option value="time2">Vitória do Time 2</option>
+          <option value="clube1">Vitória do Clube 1</option>
+          <option value="clube2">Vitória do Clube 2</option>
           <option value="empate">Empate</option>
         </select>
         <br />
 
         <button type="submit">Registrar Resultado</button>
-
-        <button onClick={resetTabela} style={{ marginTop: '20px', backgroundColor: 'red', color: 'white' }}>
-          Resetar Tabela
-        </button>
       </form>
     </div>
   );

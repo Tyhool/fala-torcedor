@@ -3,84 +3,77 @@ import axios from 'axios';
 import '../../App.css';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'http://localhost:3000'
 });
 
 function Tabela() {
-  const [series, setSeries] = useState([]);
-  const [selectedSerie, setSelectedSerie] = useState('');
-  const [tabela, setTabela] = useState(null);
+  const [campeonatos, setCampeonatos] = useState([]);
+  const [ligas, setLigas] = useState([]);
+  const [clubes, setClubes] = useState([]);
+  const [placares, setPlacares] = useState([]);
+  const [campeonatoId, setCampeonatoId] = useState('');
+  const [clubesNaLiga, setClubesNaLiga] = useState([]);
 
   useEffect(() => {
-    // Buscar séries disponíveis
-    api.get('/times').then((res) => {
-      const seriesList = Array.from(new Set(res.data.map((team) => team.serie)));
-      setSeries(seriesList);
-    });
+    api.get('/campeonatos').then((res) => setCampeonatos(res.data));
+    api.get('/ligas').then((res) => setLigas(res.data));
+    api.get('/clubes').then((res) => setClubes(res.data));
+    api.get('/placares').then((res) => setPlacares(res.data));
   }, []);
 
-  const buscarTabela = async (e) => {
-    e.preventDefault();
-    if (!selectedSerie) {
-      alert('Selecione uma série!');
-      return;
+  useEffect(() => {
+    if (campeonatoId) {
+      const clubesFiltrados = clubes.filter((clube) => 
+        ligas.some((liga) => liga.clube_id === clube.id && liga.campeonato_id === parseInt(campeonatoId))
+      ).map(clube => {
+        const liga = ligas.find(liga => liga.clube_id === clube.id && liga.campeonato_id === parseInt(campeonatoId));
+        const placar = placares.find(p => p.liga_id === liga?.id);
+        return {
+          ...clube,
+          placar
+        };
+      });
+      setClubesNaLiga(clubesFiltrados);
     }
-
-    try {
-      const res = await api.get('/tabelas', { params: { serie: selectedSerie } });
-      setTabela(res.data);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao buscar a tabela.');
-    }
-  };
+  }, [campeonatoId, ligas, clubes, placares]);
 
   return (
     <div>
-      <h1>Tabela de Times</h1>
-      <form onSubmit={buscarTabela}>
-        <label htmlFor="serie-select">Selecione uma série:</label>
-        <select
-          id="serie-select"
-          value={selectedSerie}
-          onChange={(e) => setSelectedSerie(e.target.value)}
-        >
-          <option value="">--Selecione--</option>
-          {series.map((serie, index) => (
-            <option key={index} value={serie}>
-              {serie}
+      <h1>Tabela de Clubes no Campeonato</h1>
+      <form>
+        <select value={campeonatoId} onChange={(e) => setCampeonatoId(e.target.value)}>
+          <option value="">Selecione um Campeonato</option>
+          {campeonatos.map((campeonato) => (
+            <option key={campeonato.id} value={campeonato.id}>
+              {campeonato.nome} {campeonato.serie}
             </option>
           ))}
         </select>
-        <br />
-        <button type="submit">Buscar Tabela</button>
       </form>
 
-      {tabela && (
-        <div>
-          <h2>Tabela da Série: {tabela.serie}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Vitórias</th>
-                <th>Derrotas</th>
-                <th>Empates</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tabela.tabela.map((time, index) => (
-                <tr key={index}>
-                  <td>{time.nome}</td>
-                  <td>{time.vitoria}</td>
-                  <td>{time.derrota}</td>
-                  <td>{time.empate}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <h2>Clubes no Campeonato Selecionado</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome do Clube</th>
+            <th>Vitórias</th>
+            <th>Empates</th>
+            <th>Derrotas</th>
+            <th>Jogos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {clubesNaLiga.map((clube) => (
+            <tr key={clube.id}>
+              <td>{clube.nome}</td>
+              <td>{clube.placar?.vitoria || 0}</td>
+              <td>{clube.placar?.empates || 0}</td>
+              <td>{clube.placar?.derrotas || 0}</td>
+              <td>{clube.placar?.jogos || 0}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

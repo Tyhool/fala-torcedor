@@ -3,109 +3,118 @@ import axios from 'axios';
 import '../../App.css';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000'
+  baseURL: 'http://localhost:3000' // Ajuste a URL da sua API
 });
 
 function App() {
-  const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState('');
-  const [selectedSerie, setSelectedSerie] = useState('');
-  const [report, setReport] = useState(null);
+  const [campeonatos, setCampeonatos] = useState([]);
+  const [ligas, setLigas] = useState([]);
+  const [clubes, setClubes] = useState([]);
+  const [clubesNaLiga, setClubesNaLiga] = useState([]);
+  const [torcedores, setTorcedores] = useState([]);
+  const [torcedoresDoClube, setTorcedoresDoClube] = useState([]); // Novo estado
+  const [selectedCampeonato, setSelectedCampeonato] = useState('');
+  const [selectedClube, setSelectedClube] = useState('');
 
   useEffect(() => {
-    // Buscar times
-    api.get('/times').then((res) => {
-      setTeams(res.data);
+    // Buscar campeonatos
+    api.get('/campeonatos').then((res) => {
+      setCampeonatos(res.data);
+    });
+
+    // Buscar ligas
+    api.get('/ligas').then((res) => {
+      setLigas(res.data);
+    });
+
+    // Buscar clubes
+    api.get('/clubes').then((res) => {
+      setClubes(res.data);
+    });
+
+    // Buscar torcedores (inicialmente vazio)
+    api.get('/torcedores').then((res) => {
+      setTorcedores(res.data);
     });
   }, []);
 
-  const gerarRelatorio = async (e) => {
-    e.preventDefault();
-    if (!selectedTeam && !selectedSerie) {
-      alert('Selecione um time ou uma série!');
-      return;
+  useEffect(() => {
+    if (selectedCampeonato) {
+      const clubesFiltrados = clubes.filter((clube) =>
+        ligas.some((liga) => liga.clube_id === clube.id && liga.campeonato_id === parseInt(selectedCampeonato))
+      );
+      setClubesNaLiga(clubesFiltrados);
+      setSelectedClube(''); // Resetar seleção de clube ao mudar campeonato
+      setTorcedoresDoClube([]); // Resetar torcedores ao mudar campeonato
+    } else {
+      setClubesNaLiga([]);
+      setSelectedClube('');
+      setTorcedoresDoClube([]);
     }
+  }, [selectedCampeonato, ligas, clubes]);
 
-    try {
-      const params = {};
-      if (selectedTeam) params.time = selectedTeam;
-      if (selectedSerie) params.serie = selectedSerie;
-
-      const res = await api.get('/relatorios', { params });
-      setReport(res.data);
-      alert(res.data );
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao gerar o relatório.');
+  useEffect(() => {
+    if (selectedClube) {
+      const torcedoresFiltrados = torcedores.filter((torcedor) => torcedor.clube_id === parseInt(selectedClube));
+      setTorcedoresDoClube(torcedoresFiltrados);
+    } else {
+      setTorcedoresDoClube([]);
     }
-  };
+  }, [selectedClube, torcedores]);
 
   return (
     <div>
-      <div>
-        <h1>Relatório</h1>
-        <form onSubmit={gerarRelatorio}>
-          <label htmlFor="time-select">Selecione um time:</label>
-          <select
-            id="time-select"
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-          >
-            <option value="">--Selecione--</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.nome}>
-                {team.nome}
-              </option>
-            ))}
-          </select>
-            <br />
-          <label htmlFor="serie-input">Informe a série:</label>
-          <select
-            id="serie-select"
-            value={selectedSerie}
-            onChange={(e) => setSelectedSerie(e.target.value)}
-          >
-            <option value="">--Selecione--</option>
-            {Array.from(new Set(teams.map(team => team.serie))).map((serie, index) => (
-              <option key={index} value={serie}>
-                {serie}
-              </option>
-            ))}
-          </select>
-            <br />
-          <button type="submit">Gerar Relatório</button>
-        </form>
+      <h1>Consulta de Clubes e Torcedores</h1>
 
-        {report && (
-          <div>
-            <h3>Resultado do Relatório</h3>
-            {report.total_torcedores !== undefined && (
-              <p>
-                Time: {selectedTeam} <br />
-                Serie: {teams.find((team) => team.nome === selectedTeam)?.serie || 'Série não encontrada'} <br />
-                Total de torcedores: {report.total_torcedores} <br />
-                Lista de Torcedores:
-                <ul>
-                  {report.torcedores.map((nome, index) => (
-                    <li key={index}>{nome}</li>
-                  ))}
-                </ul>
-              </p>
-            )}
-            {report.total_times !== undefined && (
-              <p>
-                Total de times na série: {report.total_times} <br />
-                Lista de Times:
-                <ul>
-                  {report.times.map((nome, index) => (
-                    <li key={index}>{nome}</li>
-                  ))}
-                </ul>
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Seleção de Campeonato */}
+      <label htmlFor="campeonato-select">Selecione um campeonato:</label>
+      <select
+        id="campeonato-select"
+        value={selectedCampeonato}
+        onChange={(e) => setSelectedCampeonato(e.target.value)}
+      >
+        <option value="">--Selecione--</option>
+        {campeonatos.map((camp) => (
+          <option key={camp.id} value={camp.id}>{camp.nome} {camp.serie}</option>
+        ))}
+      </select>
+
+      {/* Listar Clubes */}
+      {clubesNaLiga.length > 0 && (
+        <div>
+          <h3>Clubes do Campeonato</h3>
+          <ul>
+            {clubesNaLiga.map((clube) => (
+              <li key={clube.id}>{clube.nome}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Seleção de Clube */}
+      <label htmlFor="clube-select">Selecione um clube:</label>
+      <select
+        id="clube-select"
+        value={selectedClube}
+        onChange={(e) => setSelectedClube(e.target.value)}
+      >
+        <option value="">--Selecione--</option>
+        {clubesNaLiga.map((clube) => (
+          <option key={clube.id} value={clube.id}>{clube.nome}</option>
+        ))}
+      </select>
+
+      {/* Listar Torcedores */}
+      {torcedoresDoClube.length > 0 && (
+        <div>
+          <h3>Torcedores do Clube</h3>
+          <ul>
+            {torcedoresDoClube.map((torcedor) => (
+              <li key={torcedor.id}>{torcedor.nome}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

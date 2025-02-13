@@ -9,20 +9,33 @@ const Navbar = () => {
                     <Link to="/">Home</Link>
                 </li>
                 <li>
+                    <Link to="/campeonato">Campeonato</Link>
+                </li>
+                <li>
+                    <Link to="/clube">Clube</Link>
+                </li>
+                <li>
                     <Link to="/torcedor">Torcedor</Link>
                 </li>
                 <li>
-                    <Link to="/time">Time</Link>
+                    <Link to="/liga">Liga</Link>
                 </li>
                 <li>
-                    <Link to="/relatorio">Relatorio</Link>
+                    <Link to="/placar">Placar</Link>
                 </li>
+                <p>----------------------------------------------</p>
                 <li>
                     <Link to="/tabela">Tabela</Link>
                 </li>
                 <li>
-                    <Link to="/resultado">Resultado</Link>
+                    <Link to="/relatorio">Relatorio</Link>
                 </li>
+                {/*
+                <li>
+                    <Link to="/Resultado">Resultado</Link>
+                </li>
+ */}
+                
             </ul>
         </nav>
     );

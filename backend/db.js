@@ -33,64 +33,58 @@ async function connect() {
 // Exporta a função para uso em outras partes da aplicação
 module.exports = { connect };
 
-async function selectTimes(){
+//-------------------clube-------------------
+
+async function selectClubes() {
 	const client = await connect();
-	const res = await client.query ("select * from time" );
+	const res = await client.query("SELECT * FROM clube");
 	return res.rows;
-	
-}
-
-async function selectTime(id){
+  }
+  
+  async function selectClube(id) {
 	const client = await connect();
-	const res = await client.query ("select * from time where ID=$1",[id] );
-	return res.rows;
-	
-}
-
-async function insertTime(time){
+	const res = await client.query("SELECT * FROM clube WHERE id=$1", [id]);
+	return res.rows[0];
+  }
+  
+  async function insertClube(clube) {
 	const client = await connect();
-	const sql = "insert into time(nome,serie,fundacao) values ($1,$2,$3)";
-	const values = [time.nome,time.serie,time.fundacao];
-	const res = await client.query (sql,values);	
-}
-
-  async function updateTime(id, time) {
+	const sql = "INSERT INTO clube (nome, fundacao) VALUES ($1, $2)";
+	const values = [clube.nome, clube.fundacao];
+	await client.query(sql, values);
+  }
+  
+  async function updateClube(id, clube) {
 	const client = await connect();
-	
 	const fields = [];
 	const values = [];
 	let index = 1;
   
-	if (time.nome) {
+	if (clube.nome) {
 	  fields.push(`nome=$${index++}`);
-	  values.push(time.nome);
+	  values.push(clube.nome);
 	}
-	if (time.serie) {
-	  fields.push(`serie=$${index++}`);
-	  values.push(time.serie);
-	}
-	if (time.fundacao) {
+	if (clube.fundacao) {
 	  fields.push(`fundacao=$${index++}`);
-	  values.push(time.fundacao);
+	  values.push(clube.fundacao);
 	}
   
 	if (fields.length === 0) {
 	  throw new Error("Nenhum campo para atualizar.");
 	}
   
-	values.push(id); // Adiciona o ID no final da lista de valores
-	const sql = `UPDATE time SET ${fields.join(", ")} WHERE id=$${index}`;
-	
+	values.push(id);
+	const sql = `UPDATE clube SET ${fields.join(", ")} WHERE id=$${index}`;
+  
 	await client.query(sql, values);
   }
-
-
-async function deleteTime(id){
+  
+  async function deleteClube(id) {
 	const client = await connect();
-	const sql = "delete from time where id=$1";
+	const sql = "DELETE FROM clube WHERE id=$1";
 	const values = [id];
-	await client.query (sql,values);	
-}
+	await client.query (sql,values);
+  }
 
 //---------torcedor-------------
 
@@ -104,17 +98,17 @@ async function selectTorcedores(){
 
 async function selectTorcedor(id){
 	const client = await connect();
-	const res = await client.query ("select * from time where ID=$1",[id] );
+	const res = await client.query ("select * from torcedor where ID=$1",[id] );
 	return res.rows;
 	
 }
 
-async function insertTorcedor(torcedor){
+async function insertTorcedor(torcedor) {
 	const client = await connect();
-	const sql = "insert into torcedor(nome,time,nascimento) values ($1,$2,$3)";
-	const values = [torcedor.nome,torcedor.time,torcedor.nascimento];
-	const res = await client.query (sql,values);	
-}
+	const sql = "INSERT INTO torcedor (nome, clube_id, nascimento) VALUES ($1, $2, $3)";
+	const values = [torcedor.nome, torcedor.clube_id, torcedor.nascimento];
+	await client.query(sql, values);
+  }
 
 
 async function updateTorcedor(id,torcedor) {
@@ -128,9 +122,9 @@ async function updateTorcedor(id,torcedor) {
 	  fields.push(`nome=$${index++}`);
 	  values.push(torcedor.nome);
 	}
-	if (torcedor.time) {
-	  fields.push(`time=$${index++}`);
-	  values.push(torcedor.time);
+	if (torcedor.clube_id) {
+		fields.push(`clube_id=$${index++}`);
+		values.push(torcedor.clube_id);
 	}
 	if (torcedor.nascimento) {
 	  fields.push(`nascimento=$${index++}`);
@@ -154,65 +148,240 @@ async function deleteTorcedor(id){
 	await client.query (sql,values);	
 }
 
+//----------campeonato------------
+
+// Funções para a tabela competicao
+async function selectCampeonatos() {
+	const client = await connect();
+	const res = await client.query("SELECT * FROM campeonato");
+	return res.rows;
+  }
+  
+  async function selectCampeonato(id) {
+	const client = await connect();
+	const res = await client.query("SELECT * FROM campeonato WHERE id=$1", [id]);
+	return res.rows[0];
+  }
+  
+  async function insertCampeonato(campeonato) {
+	const client = await connect();
+	const sql = "INSERT INTO campeonato (nome, serie) VALUES ($1, $2)";
+	const values = [campeonato.nome, campeonato.serie];
+	await client.query(sql, values);
+  }
+  
+  async function updateCampeonato(id, campeonato) {
+	const client = await connect();
+	const fields = [];
+	const values = [];
+	let index = 1;
+  
+	if (campeonato.nome) {
+	  fields.push(`nome=$${index++}`);
+	  values.push(campeonato.nome);
+	}
+	if (campeonato.serie) {
+	  fields.push(`serie=$${index++}`);
+	  values.push(campeonato.serie);
+	}
+  
+	if (fields.length === 0) {
+	  throw new Error("Nenhum campo para atualizar.");
+	}
+  
+	values.push(id);
+	const sql = `UPDATE campeonato SET ${fields.join(", ")} WHERE id=$${index}`;
+  
+	await client.query(sql, values);
+  }
+  
+  async function deleteCampeonato(id) {
+	const client = await connect();
+	const sql = "DELETE FROM campeonato WHERE id=$1";
+	const values = [id];
+	await client.query (sql,values);
+  }
+	
+//----------liga------------
+
+  // Funções para a tabela liga
+  async function selectLigas() {
+	const client = await connect();
+	const res = await client.query("SELECT * FROM liga");
+	return res.rows;
+  }
+  
+  async function selectLiga(id) {
+	const client = await connect();
+	const res = await client.query("SELECT * FROM liga WHERE id=$1", [id]);
+	return res.rows[0];
+  }
+  
+  async function insertLiga(liga) {
+	const client = await connect();
+	const sql = "INSERT INTO liga (campeonato_id, clube_id) VALUES ($1, $2)";
+	const values = [liga.campeonato_id, liga.clube_id];
+	await client.query(sql, values);
+  }
+  
+  async function updateLiga(id, liga) {
+	const client = await connect();
+	const fields = [];
+	const values = [];
+	let index = 1;
+  
+	if (liga.campeonato_id) {
+	  fields.push(`campeonato_id=$${index++}`);
+	  values.push(liga.campeonato_id);
+	}
+	if (liga.clube_id) {
+	  fields.push(`clube_id=$${index++}`);
+	  values.push(liga.clube_id);
+	}
+  
+	if (fields.length === 0) {
+	  throw new Error("Nenhum campo para atualizar.");
+	}
+  
+	values.push(id);
+	const sql = `UPDATE liga SET ${fields.join(", ")} WHERE id=$${index}`;
+  
+	await client.query(sql, values);
+  }
+  
+  async function deleteLiga(id) {
+	const client = await connect();
+	const sql = "DELETE FROM liga WHERE id=$1";
+	const values = [id];
+	await client.query (sql,values);
+  }
+
+//----------placar------------
+  
+  // Funções para a tabela placar
+  async function selectPlacares() {
+	const client = await connect();
+	const res = await client.query("SELECT * FROM placar");
+	return res.rows;
+  }
+  
+  async function selectPlacar(id) {
+	const client = await connect();
+	const res = await client.query("SELECT * FROM placar WHERE id=$1", [id]);
+	return res.rows[0];
+  }
+  
+  async function insertPlacar(placar) {
+	const client = await connect();
+	const sql = "INSERT INTO placar (liga_id, vitoria, derrota, empate, jogos) VALUES ($1, $2, $3, $4, $5)";
+	const values = [placar.liga_id, 0,0,0,0];
+	await client.query(sql, values);
+  }
+  
+  async function updatePlacar(id, placar) {
+	const client = await connect();
+	const fields = [];
+	const values = [];
+	let index = 1;
+  
+	if (placar.liga_id !== undefined) {
+	  fields.push(`liga_id=$${index++}`);
+	  values.push(placar.liga_id);
+	}
+	if (placar.vitoria !== undefined) {
+	  fields.push(`vitoria=$${index++}`);
+	  values.push(placar.vitoria);
+	}
+	if (placar.derrota !== undefined) {
+	  fields.push(`derrota=$${index++}`);
+	  values.push(placar.derrota);
+	}
+	if (placar.empate !== undefined) {
+	  fields.push(`empate=$${index++}`);
+	  values.push(placar.empate);
+	}
+	if (placar.jogos !== undefined) {
+	  fields.push(`jogos=$${index++}`);
+	  values.push(placar.jogos);
+	}
+  
+	if (fields.length === 0) {
+	  throw new Error("Nenhum campo para atualizar.");
+	}
+  
+	values.push(id);
+	const sql = `UPDATE placar SET ${fields.join(", ")} WHERE id=$${index}`;
+  
+	await client.query(sql, values);
+  }
+  
+  async function deletePlacar(id) {
+	const client = await connect();
+	const sql = "DELETE FROM placar WHERE id=$1";
+	const values = [id];
+	await client.query (sql,values);
+  }
+
+//-------------------------------
 //----------relatorio------------
 
 
-async function countTorcedoresPorTime(time) {
-    const client = await connect();
-    try {
-        const sql = "SELECT COUNT(*) AS total_torcedores FROM torcedor WHERE time = $1";
-        const values = [time];
-        const res = await client.query(sql, values);
-        return res.rows[0]
-    } catch (error) {
-        console.error('Erro ao executar a consulta:', error);
-        throw error;
-    }
-}
+// async function countTorcedoresPorTime(time) {
+//     const client = await connect();
+//     try {
+//         const sql = "SELECT COUNT(*) AS total_torcedores FROM torcedor WHERE time = $1";
+//         const values = [time];
+//         const res = await client.query(sql, values);
+//         return res.rows[0]
+//     } catch (error) {
+//         console.error('Erro ao executar a consulta:', error);
+//         throw error;
+//     }
+// }
 
 
-async function getTorcedoresPorTime(time) {
-	const client = await pool.connect();
-	try {
-	  const res = await client.query(
-		'SELECT nome FROM torcedor WHERE time = $1',
-		[time]
-	  );
-	  return res.rows;
-	} finally {
-	  client.release();
-	}
-  }
+// async function getTorcedoresPorTime(time) {
+// 	const client = await pool.connect();
+// 	try {
+// 	  const res = await client.query(
+// 		'SELECT nome FROM torcedor WHERE time = $1',
+// 		[time]
+// 	  );
+// 	  return res.rows;
+// 	} finally {
+// 	  client.release();
+// 	}
+//   }
 
-  async function countTimePorSerie(serie) {
-    const client = await pool.connect();
-    try {
-        const sql = "SELECT COUNT(*) AS total_times FROM time WHERE serie = $1";
-        const values = [serie];
-        const res = await client.query(sql, values);
-        return res.rows[0];
-    } catch (error) {
-        console.error('Erro ao contar times por série:', error);
-        throw error;
-    } finally {
-        client.release();
-    }
-}
+//   async function countTimePorSerie(serie) {
+//     const client = await pool.connect();
+//     try {
+//         const sql = "SELECT COUNT(*) AS total_times FROM time WHERE serie = $1";
+//         const values = [serie];
+//         const res = await client.query(sql, values);
+//         return res.rows[0];
+//     } catch (error) {
+//         console.error('Erro ao contar times por série:', error);
+//         throw error;
+//     } finally {
+//         client.release();
+//     }
+// }
 
-async function getTimePorSerie(serie) {
-    const client = await pool.connect();
-    try {
-        const sql = "SELECT nome FROM time WHERE serie = $1";
-        const values = [serie];
-        const res = await client.query(sql, values);
-        return res.rows;
-    } catch (error) {
-        console.error('Erro ao buscar times por série:', error);
-        throw error;
-    } finally {
-        client.release();
-    }
-}
+// async function getTimePorSerie(serie) {
+//     const client = await pool.connect();
+//     try {
+//         const sql = "SELECT nome FROM time WHERE serie = $1";
+//         const values = [serie];
+//         const res = await client.query(sql, values);
+//         return res.rows;
+//     } catch (error) {
+//         console.error('Erro ao buscar times por série:', error);
+//         throw error;
+//     } finally {
+//         client.release();
+//     }
+// }
 
 
 //----------tabela----------------------
@@ -288,36 +457,39 @@ async function resetTabela() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 module.exports = {
-	selectTimes,
-	selectTime,
-	insertTime,
-	updateTime,
-	deleteTime,
+	selectClubes,
+	selectClube,
+	insertClube,
+	updateClube,
+	deleteClube,
 	selectTorcedores,
 	selectTorcedor,
 	insertTorcedor,
 	updateTorcedor,
 	deleteTorcedor,
-	countTorcedoresPorTime,
-	getTorcedoresPorTime,
-	countTimePorSerie,
-	getTimePorSerie,
+	selectCampeonatos,
+	selectCampeonato,
+	insertCampeonato,
+	updateCampeonato,
+	deleteCampeonato,
+	selectLigas,
+	selectLiga,
+	insertLiga,
+	updateLiga,
+	deleteLiga,
+	selectPlacares,
+	selectPlacar,
+	insertPlacar,
+	updatePlacar,
+	deletePlacar,
+	// countTorcedoresPorTime,
+	// getTorcedoresPorTime,
+	// countTimePorSerie,
+	// getTimePorSerie,
 	getTabela,
 	registrarResultado,
-  resetTabela,
+	resetTabela
 }
 
 
