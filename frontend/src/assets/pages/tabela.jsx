@@ -13,6 +13,9 @@ function Tabela() {
   const [placares, setPlacares] = useState([]);
   const [campeonatoId, setCampeonatoId] = useState('');
   const [clubesNaLiga, setClubesNaLiga] = useState([]);
+  const [clube1, setClube1] = useState('');
+  const [clube2, setClube2] = useState('');
+  const [resultado, setResultado] = useState('');
 
   useEffect(() => {
     api.get('/campeonatos').then((res) => setCampeonatos(res.data));
@@ -36,6 +39,41 @@ function Tabela() {
       setClubesNaLiga(clubesFiltrados);
     }
   }, [campeonatoId, ligas, clubes, placares]);
+
+  const registrarResultado = async () => {
+    if (!clube1 || !clube2 || !resultado) return;
+
+    const atualizarPlacar = async (clubeId, vitoria, empate, derrota) => {
+        try {
+            const clube = clubesNaLiga.find(c => c.id === parseInt(clubeId));
+            if (clube && clube.placar) {
+                await api.patch(`/placares/${clube.placar.id}`, { // Use PATCH
+                    vitoria: clube.placar.vitoria + vitoria,
+                    empate: clube.placar.empate + empate, // Corrected: empate
+                    derrota: clube.placar.derrota + derrota,
+                    jogos: clube.placar.jogos + 1
+                });
+                // Refresh placares after update:
+                const res = await api.get('/placares');
+                setPlacares(res.data);
+            }
+        } catch (error) {
+            console.error("Error updating placar:", error);
+            // Handle error, e.g., display a message to the user
+        }
+    };
+
+    if (resultado === 'vitoria1') {
+      atualizarPlacar(clube1, 1, 0, 0);
+      atualizarPlacar(clube2, 0, 0, 1);
+    } else if (resultado === 'vitoria2') {
+      atualizarPlacar(clube1, 0, 0, 1);
+      atualizarPlacar(clube2, 1, 0, 0);
+    } else if (resultado === 'empate') {
+      atualizarPlacar(clube1, 0, 1, 0);
+      atualizarPlacar(clube2, 0, 1, 0);
+    }
+  };
 
   return (
     <div>
@@ -67,13 +105,34 @@ function Tabela() {
             <tr key={clube.id}>
               <td>{clube.nome}</td>
               <td>{clube.placar?.vitoria || 0}</td>
-              <td>{clube.placar?.empates || 0}</td>
-              <td>{clube.placar?.derrotas || 0}</td>
+              <td>{clube.placar?.empate || 0}</td>
+              <td>{clube.placar?.derrota || 0}</td>
               <td>{clube.placar?.jogos || 0}</td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <h2>Registrar Resultado</h2>
+      <select value={clube1} onChange={(e) => setClube1(e.target.value)}>
+        <option value="">Selecione o Clube 1</option>
+        {clubesNaLiga.map((clube) => (
+          <option key={clube.id} value={clube.id}>{clube.nome}</option>
+        ))}
+      </select>
+      <select value={clube2} onChange={(e) => setClube2(e.target.value)}>
+        <option value="">Selecione o Clube 2</option>
+        {clubesNaLiga.map((clube) => (
+          <option key={clube.id} value={clube.id}>{clube.nome}</option>
+        ))}
+      </select>
+      <select value={resultado} onChange={(e) => setResultado(e.target.value)}>
+        <option value="">Selecione o Resultado</option>
+        <option value="vitoria1">Vitória Clube 1</option>
+        <option value="empate">Empate</option>
+        <option value="vitoria2">Vitória Clube 2</option>
+      </select>
+      <button onClick={registrarResultado}>Registrar</button>
     </div>
   );
 }

@@ -52,7 +52,8 @@ function Clube() {
       <ul>
         {clubes.map((clube) => {
           const dataOriginal = clube.fundacao;
-          const dataFormatada = dataOriginal.split("T")[0];
+          const [ano, mes, dia] = dataOriginal.split("T")[0].split("-");
+          const dataFormatada = `${dia}/${mes}/${ano}`;
           return (
             <li key={clube.id}>
               Clube: {clube.nome} - Fundação: {dataFormatada}

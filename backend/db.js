@@ -274,7 +274,7 @@ async function selectCampeonatos() {
   async function insertPlacar(placar) {
 	const client = await connect();
 	const sql = "INSERT INTO placar (liga_id, vitoria, derrota, empate, jogos) VALUES ($1, $2, $3, $4, $5)";
-	const values = [placar.liga_id, 0,0,0,0];
+	const values = [placar.liga_id, placar.vitoria,placar.empate,placar.derrota,placar.jogos];
 	await client.query(sql, values);
   }
   

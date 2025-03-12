@@ -65,7 +65,8 @@ function Torcedor() {
           // Encontra o nome do clube associado ao torcedor
           const clube = clubes.find((c) => c.id === torcedor.clube_id);
           const dataOriginal = torcedor.nascimento;
-          const dataFormatada = dataOriginal.split("T")[0];
+          const [ano, mes, dia] = dataOriginal.split("T")[0].split("-");
+          const dataFormatada = `${dia}/${mes}/${ano}`;
           return (
             <li key={torcedor.id}>
               Nome: {torcedor.nome} - Clube: {clube ? clube.nome : "Clube não encontrado"} - Nascimento: {dataFormatada}
